@@ -1,137 +1,228 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+package org.example.project_1;
 
-public class ExamSeatings{
 
-    private static String[][] seatingArrangement;
-    private static int rows;
-    private static int columns;
-    private static JFrame frame;
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+import java.util.*;
+
+public class ExamSeating2 extends Application {
+
+    private static Map<String, String> studentDatabase = new HashMap<>();
+    private static Map<String, String> seatingArrangement = new HashMap<>();
+    private static int rows = 5;
+    private static int columns = 5;
+    private Stage mainStage;
 
     public static void main(String[] args) {
-        // Input for rows and columns
-        rows = Integer.parseInt(JOptionPane.showInputDialog("Enter number of rows in the exam hall:"));
-        columns = Integer.parseInt(JOptionPane.showInputDialog("Enter number of columns in the exam hall:"));
-
-        seatingArrangement = new String[rows][columns];
-
-        // Initialize seating arrangement
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                seatingArrangement[i][j] = "Empty";
-            }
-        }
-
-        // Create main frame
-        frame = new JFrame("Exam Seating Arrangement System");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 400);
-
-        // Main Panel
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(4, 1));
-
-        // Buttons
-        JButton allocateButton = new JButton("Allocate Seat");
-        JButton viewButton = new JButton("View Seating");
-        JButton resetButton = new JButton("Reset Seat");
-        JButton exitButton = new JButton("Exit");
-
-        // Add Action Listeners
-        allocateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                allocateSeat();
-            }
-        });
-
-        viewButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                viewSeatingArrangement();
-            }
-        });
-
-        resetButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                resetSeat();
-            }
-        });
-
-        exitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();
-            }
-        });
-
-        // Add buttons to panel
-        panel.add(allocateButton);
-        panel.add(viewButton);
-        panel.add(resetButton);
-        panel.add(exitButton);
-
-        frame.add(panel);
-        frame.setVisible(true);
+        launch(args);
     }
 
-    private static void allocateSeat() {
-        try {
-            int row = Integer.parseInt(JOptionPane.showInputDialog("Enter row number (0-indexed):"));
-            int column = Integer.parseInt(JOptionPane.showInputDialog("Enter column number (0-indexed):"));
+    @Override
+    public void start(Stage primaryStage) {
+        this.mainStage = primaryStage;
+        primaryStage.setTitle("Exam Seating Arrangement System");
 
-            if (isValidSeat(row, column)) {
-                if (seatingArrangement[row][column].equals("Empty")) {
-                    String rollNumber = JOptionPane.showInputDialog("Enter student roll number:");
-                    seatingArrangement[row][column] = rollNumber;
-                    JOptionPane.showMessageDialog(frame, "Seat allocated successfully.");
-                } else {
-                    JOptionPane.showMessageDialog(frame, "Seat is already occupied.");
-                }
-            } else {
-                JOptionPane.showMessageDialog(frame, "Invalid seat position.");
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Invalid input. Please try again.");
-        }
+        VBox mainLayout = new VBox(10);
+        mainLayout.setPadding(new Insets(10));
+
+        Button adminButton = new Button("Admin Login");
+        Button studentButton = new Button("Student Login");
+        Button invigilatorButton = new Button("Invigilator Login");
+
+        adminButton.setOnAction(e -> adminPanel());
+        studentButton.setOnAction(e -> studentPanel());
+        invigilatorButton.setOnAction(e -> invigilatorPanel());
+
+        mainLayout.getChildren().addAll(adminButton, studentButton, invigilatorButton);
+
+        Scene scene = new Scene(mainLayout, 400, 300);
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
-    private static void viewSeatingArrangement() {
-        StringBuilder seatingDisplay = new StringBuilder();
-        seatingDisplay.append("Current Seating Arrangement:\n\n");
+    private void adminPanel() {
+        VBox adminLayout = new VBox(10);
+        adminLayout.setPadding(new Insets(10));
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                seatingDisplay.append(seatingArrangement[i][j]).append("\t");
-            }
-            seatingDisplay.append("\n");
-        }
+        Button addStudentButton = new Button("Add Student");
+        Button setSeatingSizeButton = new Button("Set Rows & Columns");
+        Button generateSeatingButton = new Button("Generate Seating Plan");
+        Button viewSeatingButton = new Button("View Seating Plan");
+        Button backButton = new Button("Back");
 
-        JTextArea textArea = new JTextArea(seatingDisplay.toString());
-        textArea.setEditable(false);
-        JOptionPane.showMessageDialog(frame, new JScrollPane(textArea), "Seating Arrangement", JOptionPane.INFORMATION_MESSAGE);
+        addStudentButton.setOnAction(e -> addStudent());
+        setSeatingSizeButton.setOnAction(e -> setSeatingSize());
+        generateSeatingButton.setOnAction(e -> generateSeatingPlan());
+        viewSeatingButton.setOnAction(e -> viewSeatingPlan());
+        backButton.setOnAction(e -> start(mainStage));
+
+        adminLayout.getChildren().addAll(addStudentButton, setSeatingSizeButton, generateSeatingButton, viewSeatingButton, backButton);
+
+        Scene adminScene = new Scene(adminLayout, 400, 300);
+        mainStage.setScene(adminScene);
     }
 
-    private static void resetSeat() {
-        try {
-            int row = Integer.parseInt(JOptionPane.showInputDialog("Enter row number (0-indexed):"));
-            int column = Integer.parseInt(JOptionPane.showInputDialog("Enter column number (0-indexed):"));
+    private void studentPanel() {
+        VBox studentLayout = new VBox(10);
+        studentLayout.setPadding(new Insets(10));
 
-            if (isValidSeat(row, column)) {
-                seatingArrangement[row][column] = "Empty";
-                JOptionPane.showMessageDialog(frame, "Seat reset successfully.");
-            } else {
-                JOptionPane.showMessageDialog(frame, "Invalid seat position.");
+        Label rollLabel = new Label("Enter Roll Number:");
+        TextField rollField = new TextField();
+        Button checkSeatButton = new Button("Check Seat");
+        Button backButton = new Button("Back");
+
+        checkSeatButton.setOnAction(e -> {
+            String rollNumber = rollField.getText();
+            String seat = seatingArrangement.get(rollNumber);
+            showAlert("Seat Information", seat != null ? "Your seat is: " + seat : "Seat not found for roll number: " + rollNumber);
+        });
+
+        backButton.setOnAction(e -> start(mainStage));
+
+        studentLayout.getChildren().addAll(rollLabel, rollField, checkSeatButton, backButton);
+
+        Scene studentScene = new Scene(studentLayout, 400, 300);
+        mainStage.setScene(studentScene);
+    }
+
+    private void invigilatorPanel() {
+        VBox invigilatorLayout = new VBox(10);
+        invigilatorLayout.setPadding(new Insets(10));
+
+        Label rollLabel = new Label("Enter Roll Number:");
+        TextField rollField = new TextField();
+        Button verifySeatButton = new Button("Verify Seat");
+        Button backButton = new Button("Back");
+
+        verifySeatButton.setOnAction(e -> {
+            String rollNumber = rollField.getText();
+            String seat = seatingArrangement.get(rollNumber);
+            showAlert("Verification", seat != null ? "Seat verified: " + seat : "Invalid roll number.");
+        });
+
+        backButton.setOnAction(e -> start(mainStage));
+
+        invigilatorLayout.getChildren().addAll(rollLabel, rollField, verifySeatButton, backButton);
+
+        Scene invigilatorScene = new Scene(invigilatorLayout, 400, 300);
+        mainStage.setScene(invigilatorScene);
+    }
+
+    private void addStudent() {
+        TextInputDialog rollInput = new TextInputDialog();
+        rollInput.setTitle("Add Student");
+        rollInput.setHeaderText("Enter Roll Number:");
+        Optional<String> rollNumber = rollInput.showAndWait();
+
+        if (rollNumber.isPresent() && !rollNumber.get().trim().isEmpty()) {
+            TextInputDialog nameInput = new TextInputDialog();
+            nameInput.setTitle("Add Student");
+            nameInput.setHeaderText("Enter Name:");
+            Optional<String> name = nameInput.showAndWait();
+
+            if (name.isPresent() && !name.get().trim().isEmpty()) {
+                studentDatabase.put(rollNumber.get().trim(), name.get().trim());
+                showAlert("Success", "Student added: " + name.get().trim() + " (" + rollNumber.get().trim() + ")");
             }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Invalid input. Please try again.");
         }
     }
 
-    private static boolean isValidSeat(int row, int column) {
-        return row >= 0 && row < rows && column >= 0 && column < columns;
+    private void setSeatingSize() {
+        TextInputDialog rowInput = new TextInputDialog(String.valueOf(rows));
+        rowInput.setTitle("Set Seating Size");
+        rowInput.setHeaderText("Enter Number of Rows:");
+        Optional<String> rowValue = rowInput.showAndWait();
+
+        TextInputDialog columnInput = new TextInputDialog(String.valueOf(columns));
+        columnInput.setTitle("Set Seating Size");
+        columnInput.setHeaderText("Enter Number of Columns:");
+        Optional<String> columnValue = columnInput.showAndWait();
+
+        if (rowValue.isPresent() && columnValue.isPresent()) {
+            rows = Integer.parseInt(rowValue.get().trim());
+            columns = Integer.parseInt(columnValue.get().trim());
+            showAlert("Success", "Seating size set to " + rows + " rows and " + columns + " columns.");
+        }
+    }
+
+    private void generateSeatingPlan() {
+        seatingArrangement.clear();
+        List<String> rollNumbers = new ArrayList<>(studentDatabase.keySet());
+        Collections.shuffle(rollNumbers);
+
+        int seatNumber = 0;
+        for (String rollNumber : rollNumbers) {
+            int row = seatNumber / columns + 1;
+            int column = seatNumber % columns + 1;
+            String seat = "Row " + row + ", Column " + column;
+            seatingArrangement.put(rollNumber, seat);
+            seatNumber++;
+        }
+
+        showAlert("Success", "Seating plan generated.");
+    }
+
+    private void viewSeatingPlan() {
+        Stage seatingStage = new Stage();
+        TableView<StudentSeat> table = new TableView<>();
+        ObservableList<StudentSeat> data = FXCollections.observableArrayList();
+
+        TableColumn<StudentSeat, String> rollColumn = new TableColumn<>("Roll Number");
+        rollColumn.setCellValueFactory(new PropertyValueFactory<>("rollNumber"));
+
+        TableColumn<StudentSeat, String> nameColumn = new TableColumn<>("Name");
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        TableColumn<StudentSeat, String> seatColumn = new TableColumn<>("Seat");
+        seatColumn.setCellValueFactory(new PropertyValueFactory<>("seat"));
+
+        table.getColumns().addAll(rollColumn, nameColumn, seatColumn);
+
+        for (Map.Entry<String, String> entry : seatingArrangement.entrySet()) {
+            data.add(new StudentSeat(entry.getKey(), studentDatabase.get(entry.getKey()), entry.getValue()));
+        }
+
+        table.setItems(data);
+
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> seatingStage.close());
+
+        VBox layout = new VBox(10, table, backButton);
+        layout.setPadding(new Insets(10));
+
+        Scene scene = new Scene(layout, 500, 400);
+        seatingStage.setScene(scene);
+        seatingStage.setTitle("Seating Plan");
+        seatingStage.show();
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    public static class StudentSeat {
+        private final String rollNumber, name, seat;
+
+        public StudentSeat(String rollNumber, String name, String seat) {
+            this.rollNumber = rollNumber;
+            this.name = name;
+            this.seat = seat;
+        }
+
+        public String getRollNumber() { return rollNumber; }
+        public String getName() { return name; }
+        public String getSeat() { return seat; }
     }
 }
