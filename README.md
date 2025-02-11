@@ -1,12 +1,8 @@
 
 Description of the Code:
-This Java program implements an Exam Seating Arrangement System using the Swing library for a graphical user interface (GUI). 
-It allows users to manage a seating arrangement for an exam hall by providing the following functionalities:
-
-Allocate Seat: Assign a student's roll number to a specific seat in the hall.
-View Seating Arrangement: Display the current seating arrangement in a scrollable text area.
-Reset Seat: Reset a specific seat to "Empty," making it available for allocation.
-Exit: Close the application.
-
-The seating arrangement is represented as a 2D array where each element corresponds to a seat in the hall, initialized to "Empty".
-The application ensures valid input for rows, columns, and seat positions.
+The Exam Seating Arrangement System is a JavaFX-based application designed to efficiently manage and display seating assignments for students during exams.
+It provides three user roles—Admin, Student, and Invigilator—each with distinct functionalities. 
+The Admin Panel allows administrators to add students, input the number of rows and columns for the seating arrangement, generate a randomized seating plan, 
+and view the seating arrangement in a structured table format.
+The Student Panel enables students to enter their roll number and check their assigned seat, 
+while the Invigilator Panel allows invigilators to verify a student's seat assignment.
